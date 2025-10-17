@@ -16,15 +16,15 @@ const TAX_PERCENT = 0.18; // 18%
 
 // Materials - keep aligned with Frontend/src/lib/materials.ts
 const MATERIALS = [
-  { id: 'foam', name: 'Polyurethane Foam', density: 30, price_per_kg: 0.6 },
-  { id: 'memory', name: 'Memory Foam', density: 55, price_per_kg: 1.4 },
-  { id: 'latex', name: 'Natural Latex', density: 65, price_per_kg: 2.2 },
-  { id: 'coir', name: 'Coir', density: 100, price_per_kg: 0.4 },
-  { id: 'spring', name: 'Pocket Spring (approx)', density: 7850, price_per_kg: 0.5 },
-  { id: 'd1', name: 'Cloth Texture 1', density: 10, price_per_kg: 5.0 },
-  { id: 'd2', name: 'Cloth Texture 2', density: 10, price_per_kg: 5.0 },
-  { id: 'd3', name: 'Cloth Texture 3', density: 10, price_per_kg: 5.0 },
-  { id: 'd4', name: 'Cloth Texture 4', density: 10, price_per_kg: 5.0 }
+  { id: 'foam', name: 'Polyurethane Foam', density: 30, price_per_kg: 120 },
+  { id: 'memory', name: 'Memory Foam', density: 55, price_per_kg: 140 },
+  { id: 'latex', name: 'Natural Latex', density: 65, price_per_kg: 220 },
+  { id: 'coir', name: 'Coir', density: 100, price_per_kg: 130 },
+  { id: 'spring', name: 'Pocket Spring (approx)', density: 7850, price_per_kg: 500 },
+  { id: 'd1', name: 'Cloth Texture 1', density: 10, price_per_kg: 50.0 },
+  { id: 'd2', name: 'Cloth Texture 2', density: 10, price_per_kg: 50.0 },
+  { id: 'd3', name: 'Cloth Texture 3', density: 10, price_per_kg: 50.0 },
+  { id: 'd4', name: 'Cloth Texture 4', density: 10, price_per_kg: 50.0 }
 ];
 
 app.get('/api/materials', (req, res) => res.json(MATERIALS));
