@@ -19,7 +19,10 @@ export const MATERIALS: Material[] = [
   { id: 'd1', name: 'Cloth Texture 1', density: 10, price_per_kg: 50.0, texture: '/textures/d1.png', color: '#f0f0f0' },
   { id: 'd2', name: 'Cloth Texture 2', density: 10, price_per_kg: 50.0, texture: '/textures/d2.png', color: '#f0f0f0' },
   { id: 'd3', name: 'Cloth Texture 3', density: 10, price_per_kg: 50.0, texture: '/textures/d3.png', color: '#f0f0f0' },
-  { id: 'd4', name: 'Cloth Texture 4', density: 10, price_per_kg: 50.0, texture: '/textures/d4.png', color: '#f0f0f0' }
+  { id: 'd4', name: 'Cloth Texture 4', density: 10, price_per_kg: 50.0, texture: '/textures/d4.png', color: '#f0f0f0' },
+  { id: 'd5', name: 'Cloth Texture 5', density: 10, price_per_kg: 50.0, texture: '/textures/d5.png', color: '#f0f0f0' },
+  { id: 'd6', name: 'Cloth Texture 6', density: 10, price_per_kg: 100.0, texture: '/textures/d6.jpg', color: '#f0f0f0' },
+  { id: 'd7', name: 'Cloth Texture 7', density: 10, price_per_kg: 100.0, texture: '/textures/d7.avif', color: '#f0f0f0' },
 ];
-
+  
 export default MATERIALS;

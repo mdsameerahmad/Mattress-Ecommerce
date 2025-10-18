@@ -3,7 +3,7 @@ import { MATERIALS } from "../../lib/materials";
 import Mattress3DView from "./Mattress3DView";
 import MaterialSelector from "./MaterialSelector";
 import PriceBreakdown from "./PriceBreakdown";
-import { Button } from '../ui/button';
+import { Button } from "../ui/button";
 import {
   calculateMattressPrice,
   MattressLayer,
@@ -50,6 +50,18 @@ export default function MattressBuilder() {
   const [loadingPrice, setLoadingPrice] = useState<boolean>(false);
   const [selectedCloth, setSelectedCloth] = useState<string | null>(null);
 
+  const [canvasHeight, setCanvasHeight] = useState("500px");
+
+  // ✅ Responsive Canvas Height — updates on resize
+  useEffect(() => {
+    const updateHeight = () => {
+      setCanvasHeight(window.innerWidth < 768 ? "300px" : "500px");
+    };
+    updateHeight(); // initial check
+    window.addEventListener("resize", updateHeight);
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+
   // Convert displayed values to cm for API and calculations
   const lengthCm = convertLength(lengthValue, unit, "cm");
   const widthCm = convertLength(widthValue, unit, "cm");
@@ -71,7 +83,6 @@ export default function MattressBuilder() {
 
   // Handle unit change
   const handleUnitChange = (newUnit: UnitType) => {
-    // Convert current values to the new unit
     setLengthValue(
       Number(convertLength(lengthValue, unit, newUnit).toFixed(1))
     );
@@ -82,16 +93,13 @@ export default function MattressBuilder() {
   // Apply cloth to mattress
   const applyCloth = (clothId: string) => {
     setSelectedCloth(clothId);
-    // Find if there's already a cloth layer
     const clothLayerIndex = layers.findIndex((l) =>
       l.materialId.startsWith("d")
     );
 
     if (clothLayerIndex >= 0) {
-      // Update existing cloth layer
       updateLayer(clothLayerIndex, { materialId: clothId });
     } else {
-      // Add new cloth layer at the top
       setLayers((prev) => [...prev, defaultLayer(clothId, 10)]);
     }
   };
@@ -107,24 +115,105 @@ export default function MattressBuilder() {
       setPriceData(data);
     } catch (err) {
       console.error(err);
-      alert("Price calculation failed. Is the server running?");
     } finally {
       setLoadingPrice(false);
     }
   };
 
-  // auto calculate when layers change (with debounce)
+  // Auto calculate when layers change (with debounce)
   useEffect(() => {
     const t = setTimeout(() => calculatePrice(), 400);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layers, lengthCm, widthCm]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mattress-customizer">
+      {/* 3D View Section */}
+      <div className="mattress-3d-container lg:col-span-2 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+        <div
+          style={{ height: canvasHeight, transition: "height 0.3s ease" }}
+          className="w-full"
+        >
+          <Mattress3DView
+            lengthCm={lengthCm}
+            widthCm={widthCm}
+            layers={layers}
+            materials={MATERIALS}
+            unit={unit}
+          />
+        </div>
+
+        {/* Dimensions Section */}
+        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
+          <div className="flex items-center justify-between mb-5">
+            <h3 className="text-lg font-semibold text-gray-800">
+              🧩 Dimensions
+            </h3>
+            <span className="text-xs text-gray-400">Customize size</span>
+          </div>
+
+          <div className="flex justify-between mb-6 bg-gray-100 p-1 rounded-xl">
+            {(["cm", "inches", "feet"] as UnitType[]).map((unitOption) => (
+              <button
+                key={unitOption}
+                onClick={() => handleUnitChange(unitOption)}
+                className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  unit === unitOption
+                    ? "bg-white text-blue-600 shadow-sm ring-1 ring-blue-300"
+                    : "text-gray-600 hover:bg-gray-200 hover:text-gray-800"
+                }`}
+              >
+                {unitOption.charAt(0).toUpperCase() + unitOption.slice(1)}
+              </button>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            {/* Length Input */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Length
+              </label>
+              <div className="relative group">
+                <input
+                  type="number"
+                  value={lengthValue}
+                  onChange={(e) => setLengthValue(Number(e.target.value))}
+                  className="w-full px-3 py-2.5 pl-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 group-hover:shadow-sm"
+                  placeholder={`Enter length in ${unit}`}
+                />
+                <span className="absolute right-3 top-2.5 text-gray-500 text-sm">
+                  {unit}
+                </span>
+              </div>
+            </div>
+
+            {/* Width Input */}
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Width
+              </label>
+              <div className="relative group">
+                <input
+                  type="number"
+                  value={widthValue}
+                  onChange={(e) => setWidthValue(Number(e.target.value))}
+                  className="w-full px-3 py-2.5 pl-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 group-hover:shadow-sm"
+                  placeholder={`Enter width in ${unit}`}
+                />
+                <span className="absolute right-3 top-2.5 text-gray-500 text-sm">
+                  {unit}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <PriceBreakdown data={priceData} />
+      </div>
+
       {/* Left Panel */}
       <div className="lg:col-span-1 space-y-6">
-        {/* Cloth Selection Section */}
         <div className="bg-white p-5 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
             Mattress Cover
@@ -132,7 +221,6 @@ export default function MattressBuilder() {
           <p className="text-sm text-gray-600 mb-3">
             Select a cover fabric for your mattress:
           </p>
-
           <MaterialSelector
             value={selectedCloth || "d1"}
             onChange={applyCloth}
@@ -140,7 +228,6 @@ export default function MattressBuilder() {
           />
         </div>
 
-        {/* Layers Section */}
         <div className="bg-white p-5 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300">
           <h3 className="text-lg font-semibold mb-4 text-gray-800">
             Mattress Layers
@@ -222,7 +309,6 @@ export default function MattressBuilder() {
                 );
               })}
 
-            {/* Add Layer Button */}
             <button
               onClick={addLayer}
               className="add-layer-button animated-button w-full py-3 bg-gradient-to-r from-green-500 to-green-600 text-black font-medium rounded-md hover:from-green-600 hover:to-green-700 shadow-md flex items-center justify-center"
@@ -243,91 +329,9 @@ export default function MattressBuilder() {
             </button>
           </div>
         </div>
-        <Button className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">Save Design</Button>
-      </div>
-
-      {/* 3D View Section */}
-      <div className="mattress-3d-container lg:col-span-2 bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-
-        <div style={{ height: "600px" }}>
-          <Mattress3DView
-            lengthCm={lengthCm}
-            widthCm={widthCm}
-            layers={layers}
-            materials={MATERIALS}
-            unit={unit}
-          />
-        </div>
-        {/* Dimensions Section */}
-        <div className="bg-white p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-100">
-          {/* Section Header */}
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="text-lg font-semibold text-gray-800">
-              🧩 Dimensions
-            </h3>
-            <span className="text-xs text-gray-400">Customize size</span>
-          </div>
-
-          {/* Unit Selector */}
-          <div className="flex justify-between mb-6 bg-gray-100 p-1 rounded-xl">
-            {(["cm", "inches", "feet"] as UnitType[]).map((unitOption) => (
-              <button
-                key={unitOption}
-                onClick={() => handleUnitChange(unitOption)}
-                className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
-                  unit === unitOption
-                    ? "bg-white text-blue-600 shadow-sm ring-1 ring-blue-300"
-                    : "text-gray-600 hover:bg-gray-200 hover:text-gray-800"
-                }`}
-              >
-                {unitOption.charAt(0).toUpperCase() + unitOption.slice(1)}
-              </button>
-            ))}
-          </div>
-
-          {/* Input Fields */}
-          <div className="grid grid-cols-2 gap-6">
-            {/* Length */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Length
-              </label>
-              <div className="relative group">
-                <input
-                  type="number"
-                  value={lengthValue}
-                  onChange={(e) => setLengthValue(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 pl-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 group-hover:shadow-sm"
-                  placeholder={`Enter length in ${unit}`}
-                />
-                <span className="absolute right-3 top-2.5 text-gray-500 text-sm">
-                  {unit}
-                </span>
-              </div>
-            </div>
-
-            {/* Width */}
-            <div className="relative">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Width
-              </label>
-              <div className="relative group">
-                <input
-                  type="number"
-                  value={widthValue}
-                  onChange={(e) => setWidthValue(Number(e.target.value))}
-                  className="w-full px-3 py-2.5 pl-4 border border-gray-300 rounded-lg text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 group-hover:shadow-sm"
-                  placeholder={`Enter width in ${unit}`}
-                />
-                <span className="absolute right-3 top-2.5 text-gray-500 text-sm">
-                  {unit}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-        {/* Price Breakdown */}
-        <PriceBreakdown data={priceData} />
+        <Button className="w-full bg-[#1E3A8A] hover:bg-[#1E3A8A]/90">
+          Save Design
+        </Button>
       </div>
     </div>
   );
